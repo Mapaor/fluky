@@ -132,7 +132,7 @@
       ctx.font = '100px Georgia';
       ctx.fillStyle = 'white';
       ctx.fillText('Ruleta', centerX - 155, centerY - 20);
-      ctx.fillText('Olee!!!', centerX - 155, centerY + 95);
+      ctx.fillText('de la sort', centerX - 155, centerY + 95);
       return;
     }
 
