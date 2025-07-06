@@ -86,12 +86,15 @@ body {
   position: relative;
   padding: 4rem;
 }
+
 #controls #inputContainer {
   width: 100%;
 }
+
 #controls #inputContainer input {
   width: 100%;
 }
+
 #controls #inputContainer #addNameButton {
   position: absolute;
   top: 4rem;
@@ -142,6 +145,7 @@ body {
   margin: 20px 0;
   width: 100%;
 }
+
 #nameList li {
   display: flex;
   justify-content: space-between;
@@ -151,12 +155,14 @@ body {
   margin-bottom: 5px;
   border-radius: 5px;
 }
+
 #nameList span {
   font-weight: bold;
   font-size: 20px;
   cursor: pointer;
   color: white;
 }
+
 #nameList li:hover span {
   color: red;
 }
@@ -329,4 +335,4 @@ body {
   100% {
     transform: translateY(140vh); /* End below the viewport */
   }
-} /*# sourceMappingURL=styles.css.map */
+}
