@@ -131,8 +131,8 @@
       ctx.fill();
       ctx.font = '100px Georgia';
       ctx.fillStyle = 'white';
-      ctx.fillText('Euchre', centerX - 155, centerY - 20);
-      ctx.fillText('Night!!!', centerX - 155, centerY + 95);
+      ctx.fillText('Ruleta', centerX - 155, centerY - 20);
+      ctx.fillText('Olee!!!', centerX - 155, centerY + 95);
       return;
     }
 
