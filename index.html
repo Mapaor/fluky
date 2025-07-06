@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Fluky 2.0</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="wave-container"></div>
+    <div id="mainContainer">
+      <div id="controls">
+        <div id="inputContainer">
+          <input type="text" id="nameInput" placeholder="Enter name" />
+          <button id="addNameButton">+</button>
+        </div>
+        <ul id="nameList"></ul>
+      </div>
+      <div id="wheelContainer">
+        <canvas id="wheelCanvas" width="500" height="500"></canvas>
+        <button class="button-79" role="button" id="spinButton">Spin</button>
+      </div>
+    </div>
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <h2 id="winnerName"></h2>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
