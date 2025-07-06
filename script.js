@@ -131,8 +131,8 @@
       ctx.fill();
       ctx.font = '100px Georgia';
       ctx.fillStyle = 'white';
-      ctx.fillText('Ruleta', centerX - 155, centerY - 20);
-      ctx.fillText('de la sort', centerX - 155, centerY + 95);
+      ctx.fillText(' Quins', centerX - 165, centerY - 20);
+      ctx.fillText('nervitss', centerX - 165, centerY + 95);
       return;
     }
 
