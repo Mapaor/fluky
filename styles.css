@@ -337,8 +337,7 @@ body {
   }
 }
 
-/* Mobile responsive */
-
+/* MOBILE STYLE IMPROVEMENTS */
 @media (max-width: 600px) {
   html, body {
     width: 100vw;
@@ -365,24 +364,32 @@ body {
 
   #controls #inputContainer {
     width: 100%;
+    display: flex;            /* Ensure inline layout */
+    flex-direction: row;      /* Input + button side by side */
+    align-items: center;
+    gap: 8px;                 /* Small gap between input and button */
     margin-bottom: 1rem;
   }
 
   #controls #inputContainer input {
     font-size: 18px;
     padding: 12px;
-    width: calc(100% - 50px);
+    flex: 1 1 0%;            /* Take all available space */
+    min-width: 0;
     border-radius: 6px;
   }
 
   #controls #inputContainer #addNameButton {
     position: static;
-    margin-left: 8px;
-    margin-top: 0;
-    margin-bottom: 0;
+    margin: 0;
     font-size: 22px;
-    padding: 8px 16px;
+    padding: 8px 20px;
     border-radius: 6px;
+    min-width: 42px;         /* Makes button a perfect circle when just '+' */
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   #nameList {
@@ -407,12 +414,14 @@ body {
     margin: 0;
   }
 
-  /* Responsive canvas */
+  /* Responsive canvas: always square! */
   #wheelCanvas {
     width: 90vw !important;
+    height: 90vw !important;
     max-width: 90vw !important;
-    height: auto !important;
-    max-height: 60vw !important;
+    max-height: 90vw !important;
+    min-width: 220px;
+    min-height: 220px;
     display: block;
     margin: 0 auto;
     background: none;
