@@ -7,26 +7,27 @@
   const nameList = document.getElementById('nameList');
   const controls = document.getElementById('controls');
 
-  // Declare as let so we can update them later on
+  // Make these let so they can be updated dynamically
   let centerX, centerY, radius;
 
   // Responsive canvas sizing
   function resizeCanvas() {
+    let size;
     if (window.innerWidth <= 600) {
-      canvas.width = Math.min(window.innerWidth * 0.9, 380);
-      canvas.height = canvas.width;
+      size = Math.max(Math.min(window.innerWidth * 0.9, 380), 220); // min 220px, max 380px, 90vw
     } else if (window.innerWidth < 900) {
-      canvas.width = 420;
-      canvas.height = 420;
+      size = 420;
     } else {
-      canvas.width = 600;
-      canvas.height = 600;
+      size = 600;
     }
+    canvas.width = size;
+    canvas.height = size;
     centerX = canvas.width / 2;
     centerY = canvas.height / 2;
-    radius = Math.floor(canvas.width * 0.44); // scale the radius with canvas size, about 88% diameter
+    radius = Math.floor(canvas.width * 0.44); // Dynamically scale radius (original ratio)
   }
 
+  // Resize if mobile/tablet/desktop version
   resizeCanvas();
   window.addEventListener('resize', () => {
     resizeCanvas();
@@ -139,17 +140,25 @@
   function drawWheel() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // If there are no names, draw the dotted circle
+    // If there are no names, draw the dotted circle and the "Quins nervitss" text (scale font and position for mobile)
     if (names.length === 0) {
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
       ctx.setLineDash([15, 15]); // Dotted line style
       ctx.fillStyle = 'rgb(222, 174, 18)';
       ctx.fill();
-      ctx.font = '100px Georgia';
+
+      // Responsive font and placement
+      let isMobile = window.innerWidth <= 600;
+      let fontSize = isMobile ? Math.round(canvas.width / 10) : 100;
+      ctx.font = fontSize + "px Georgia";
       ctx.fillStyle = 'white';
-      ctx.fillText(' Quins', centerX - 165, centerY - 20);
-      ctx.fillText('nervitss', centerX - 165, centerY + 95);
+      // Calculate text widths for recentring
+      let quinsWidth = ctx.measureText(' Quins').width;
+      let nervitssWidth = ctx.measureText('nervitss').width;
+      // Center horizontally, stack vertically
+      ctx.fillText(' Quins', centerX - quinsWidth / 2, centerY - fontSize * 0.2);
+      ctx.fillText('nervitss', centerX - nervitssWidth / 2, centerY + fontSize * 0.95);
       return;
     }
 
