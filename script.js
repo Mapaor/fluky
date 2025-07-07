@@ -7,14 +7,31 @@
   const nameList = document.getElementById('nameList');
   const controls = document.getElementById('controls');
 
-  // Increase the canvas size to accommodate the larger wheel and ensure the arrow stays in view
-  canvas.width = 600; // Adjusted width for larger wheel
-  canvas.height = 600; // Adjusted height for larger wheel
-  const centerX = canvas.width / 2;
-  const centerY = canvas.height / 2;
+  // Declare as let so we can update them later on
+  let centerX, centerY, radius;
 
-  // Increase radius by 1/3 (from 200 to 266)
-  const radius = 266;
+  // Responsive canvas sizing
+  function resizeCanvas() {
+    if (window.innerWidth <= 600) {
+      canvas.width = Math.min(window.innerWidth * 0.9, 380);
+      canvas.height = canvas.width;
+    } else if (window.innerWidth < 900) {
+      canvas.width = 420;
+      canvas.height = 420;
+    } else {
+      canvas.width = 600;
+      canvas.height = 600;
+    }
+    centerX = canvas.width / 2;
+    centerY = canvas.height / 2;
+    radius = Math.floor(canvas.width * 0.44); // scale the radius with canvas size, about 88% diameter
+  }
+
+  resizeCanvas();
+  window.addEventListener('resize', () => {
+    resizeCanvas();
+    drawWheel();
+  });
 
   let names = [];
   let anglePerName;
