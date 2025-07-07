@@ -150,7 +150,7 @@
 
       // Responsive font and placement
       let isMobile = window.innerWidth <= 600;
-      let fontSize = isMobile ? Math.round(canvas.width / 10) : 100;
+      let fontSize = isMobile ? Math.round(canvas.width / 10) : 140;
       ctx.font = fontSize + "px Georgia";
       ctx.fillStyle = 'white';
       // Calculate text widths for recentring
