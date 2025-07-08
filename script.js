@@ -2,10 +2,13 @@
   const canvas = document.getElementById('wheelCanvas');
   const ctx = canvas.getContext('2d');
   const nameInput = document.getElementById('nameInput');
+  const questionInput = document.getElementById('nameQuestion');
   const addNameButton = document.getElementById('addNameButton');
   const spinButton = document.getElementById('spinButton');
   const nameList = document.getElementById('nameList');
   const controls = document.getElementById('controls');
+  const modal = document.getElementById('modal');
+  const closeModalButton = document.querySelector('.close-modal');
 
   // Make these let so they can be updated dynamically
   let centerX, centerY, radius;
@@ -32,6 +35,44 @@
   window.addEventListener('resize', () => {
     resizeCanvas();
     drawWheel();
+  });
+
+  // Add precise mouse move detection for wheel hover effect
+  canvas.addEventListener('mousemove', (event) => {
+    if (names.length >= 2 && !spinning) {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+      
+      // Calculate distance from center of the wheel
+      const distanceFromCenter = Math.sqrt(
+        Math.pow(mouseX - centerX, 2) + Math.pow(mouseY - centerY, 2)
+      );
+      
+      // Show button only when cursor is within the wheel radius
+      if (distanceFromCenter <= radius) {
+        showSpinButton();
+      } else {
+        hideSpinButton();
+      }
+    }
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    if (names.length >= 2 && !spinning) {
+      hideSpinButton();
+    }
+  });
+
+  // Add mouse enter/leave event listeners for the spin button to prevent it from disappearing
+  spinButton.addEventListener('mouseenter', () => {
+    showSpinButton();
+  });
+
+  spinButton.addEventListener('mouseleave', () => {
+    if (names.length >= 2 && !spinning) {
+      hideSpinButton();
+    }
   });
 
   let names = [];
@@ -65,6 +106,20 @@
 
   let assignedColors = [];
 
+  function hideSpinButton() {
+    spinButton.style.opacity = 0;
+    spinButton.style.pointerEvents = 'none';
+    spinButton.style.cursor = 'default';
+  }
+
+  function showSpinButton() {
+    if (names.length >= 2 && !spinning) {
+      spinButton.style.opacity = 1;
+      spinButton.style.pointerEvents = 'auto';
+      spinButton.style.cursor = 'pointer';
+    }
+  }
+
   function getColor() {
     if (assignedColors.length < predefinedColors.length) {
       let randomColor;
@@ -80,6 +135,40 @@
       const lightness = Math.floor(Math.random() * 20) + 40;
       return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
+  }
+
+  // Add event listener for closing modal
+  closeModalButton.addEventListener('click', () => {
+    closeModal();
+  });
+
+  function closeModal() {
+    // Hide modal
+    modal.style.display = 'none';
+    modal.classList.remove('animated');
+    modal.style.backgroundColor = '';
+    
+    // Remove confetti
+    const confettiContainers = document.querySelectorAll('.confetti-container');
+    confettiContainers.forEach(container => container.remove());
+    
+    // Restore controls
+    const mainContainer = document.getElementById('mainContainer');
+    if (!document.getElementById('controls')) {
+      mainContainer.insertBefore(controls, mainContainer.firstChild);
+    }
+    
+    // Reset canvas position
+    canvas.classList.remove('slide');
+    canvas.style.paddingLeft = '0';
+    
+    // Reset spinning state
+    spinning = false;
+    spinVelocity = 0;
+    
+    // Restore button functionality (it will be shown on hover)
+    spinButton.style.pointerEvents = 'auto';
+    spinButton.style.cursor = 'pointer';
   }
 
   // Add a name to the wheel
@@ -140,29 +229,24 @@
   function drawWheel() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // If there are no names, draw the dotted circle and the "Quins nervitss" text (scale font and position for mobile)
+    const wheelTextOverlay = document.getElementById('wheelTextOverlay');
+
+    // If there are no names, show the overlay text and draw the dotted circle
     if (names.length === 0) {
+      wheelTextOverlay.style.display = 'flex';
+      
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
       ctx.setLineDash([15, 15]); // Dotted line style
       ctx.fillStyle = 'rgb(222, 174, 18)';
       ctx.fill();
-
-      // Responsive font and placement
-      let isMobile = window.innerWidth <= 600;
-      let fontSize = isMobile ? Math.round(canvas.width / 7) : 130;
-      ctx.font = fontSize + "px Georgia";
-      ctx.fillStyle = 'white';
-      // Calculate text widths for recentring
-      let quinsWidth = ctx.measureText(' Quins').width;
-      let nervitssWidth = ctx.measureText('nervitss').width;
-      // Center horizontally, stack vertically
-      ctx.fillText(' Quins', centerX - quinsWidth / 2, centerY - fontSize * 0.2);
-      ctx.fillText('nervitss', centerX - nervitssWidth / 2, centerY + fontSize * 0.95);
       return;
     }
 
-    spinButton.style.opacity = 1;
+    // Hide the overlay text when there are names
+    wheelTextOverlay.style.display = 'none';
+
+    // Button visibility is now controlled by mouse hover events
 
     anglePerName = (2 * Math.PI) / names.length;
     names.forEach((name, index) => {
@@ -180,7 +264,7 @@
       ctx.rotate(startAngle + anglePerName / 2);
       ctx.textAlign = 'right';
       ctx.fillStyle = '#000';
-      ctx.font = '16px Arial';
+      ctx.font = "16px 'Arial', 'sans-serif'";
       //   ctx.fillText(name, radius - 10, 0);
       ctx.restore();
     });
@@ -197,23 +281,37 @@
 
   // Spin the wheel
   spinButton.addEventListener('click', () => {
-    if (!spinning && names.length > 0) {
-      const randomSpinVelocity = Math.random() * 5 + 10; // Random spin velocity between 10 and 15
+    if (!spinning && names.length >= 2) {
+      const randomSpinVelocity = (Math.random() * 5 + 10) * 0.55; // Random spin velocity between 7.5 and 11.25 (75% of original)
       spinVelocity = randomSpinVelocity; // Set the initial spin velocity
       spinning = true;
-      const controlsWidth = controls.getBoundingClientRect().width;
-      controls.remove();
-      canvas.style.paddingLeft = controlsWidth + 'px';
-      spinButton.style.opacity = 0;
-
+      
+      // First fade out the button
+      hideSpinButton();
+      
+      // Wait for button fade out animation to complete (300ms), then start wheel animation
       setTimeout(() => {
+        const controlsWidth = controls.getBoundingClientRect().width;
+        
+        // Set initial padding without transition
+        canvas.style.transition = 'none';
+        canvas.style.paddingLeft = controlsWidth + 'px';
+        
+        // Remove controls after setting initial position
+        controls.remove();
+
+        // Force a reflow to ensure the padding is applied before starting animation
+        canvas.offsetHeight;
+        
+        // Re-enable transition and start the slide animation
+        canvas.style.transition = 'padding 500ms';
         canvas.classList.add('slide');
         canvas.style.paddingLeft = 0;
-      }, 0);
 
-      setTimeout(() => {
-        requestAnimationFrame(spin);
-      }, 1000);
+        setTimeout(() => {
+          requestAnimationFrame(spin);
+        }, 1000);
+      }, 300); // Wait for the 0.3s fade transition to complete
     }
   });
 
@@ -248,14 +346,23 @@
     const winnerLi = listItems[segmentIndex];
 
     const winnerNameText = winnerLi.textContent.replace('X', '').trim();
+    const questionText = questionInput.value.trim();
 
     // Show the modal after the animation
     setTimeout(() => {
-      const modal = document.getElementById('modal');
       modal.classList.add('animated');
       modal.style.display = 'block'; // Show the modal
       modal.style.backgroundColor = winnerLi.style.backgroundColor;
-      winnerName.innerHTML = winnerNameText;
+      
+      // Create the content for the modal
+      let modalContent = '';
+      if (questionText) {
+        modalContent = `<div style="font-size: 0.4em; margin-bottom: 20px; text-align: center;">${questionText}</div>${winnerNameText}`;
+      } else {
+        modalContent = winnerNameText;
+      }
+      
+      winnerName.innerHTML = modalContent;
       generateConfetti();
     }, 1000); // Wait for the animation duration to complete before showing the modal
   }
@@ -322,7 +429,7 @@
 
   function loadNamesFromUrlParams() {
     const urlParams = new URLSearchParams(window.location.search);
-    const namesParam = urlParams.get('names');
+    const namesParam = urlParams.get('opcions');
     if (namesParam) {
       const namesArray = namesParam.split(',').map((name) => name.trim());
       namesArray.forEach((name) => {
@@ -338,46 +445,46 @@
     }
   }
 
-  function makeWaves() {
-    const container = document.querySelector('.wave-container');
-    const waveCount = 20; // Number of falling balls
+  function makesBubbles() {
+    const container = document.querySelector('.bubbles-container');
+    const bubbleCount = 20; // Number of falling balls
 
-    for (let i = 0; i < waveCount; i++) {
-      const wave = document.createElement('div');
-      wave.classList.add('wave');
+    for (let i = 0; i < bubbleCount; i++) {
+      const bubble = document.createElement('div');
+      bubble.classList.add('bubble');
 
       // Randomize size
       const size = Math.random() * 150 + 50; // Size between 50px and 200px
-      wave.style.width = `${size}px`;
-      wave.style.height = `${size}px`;
+      bubble.style.width = `${size}px`;
+      bubble.style.height = `${size}px`;
 
       // Randomize horizontal position
-      wave.style.left = `${Math.random() * 100}vw`;
+      bubble.style.left = `${Math.random() * 100}vw`;
 
       // Randomize speed
       const speed = Math.random() * 10 + 12; // Speed between 5s and 15s
-      wave.style.animationDuration = `${speed}s`;
+      bubble.style.animationDuration = `${speed}s`;
 
       // Randomize delay
       const delay = Math.random() * -10; // Delay between -10s and 0s
-      wave.style.animationDelay = `${delay}s`;
+      bubble.style.animationDelay = `${delay}s`;
 
       // Randomize opacity slightly
-      wave.style.opacity = 0.4;
+      bubble.style.opacity = 0.4;
 
-      // **NEW: Randomize background color for each wave**
+      // **NEW: Randomize background color for each bubble**
       const hue = Math.random() * 360; // Full hue spectrum
       const saturation = Math.random() * 30 + 70; // Saturation between 70-100%
       const lightness = Math.random() * 20 + 50; // Lightness between 50-70%
-      wave.style.backgroundColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+      bubble.style.backgroundColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 
-      container.appendChild(wave);
+      container.appendChild(bubble);
     }
   }
 
   loadNamesFromUrlParams();
 
-  makeWaves();
+  makesBubbles();
 
   // Initial draw
   drawWheel();

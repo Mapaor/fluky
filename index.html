@@ -8,9 +8,12 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="wave-container"></div>
+    <div class="bubbles-container"></div>
     <div id="mainContainer">
       <div id="controls">
+        <div id="questionContainer">
+          <input type="text" id="nameQuestion" placeholder="Tema, pregunta o premissa" />
+        </div>
         <div id="inputContainer">
           <input type="text" id="nameInput" placeholder="Escriu una opció" />
           <button id="addNameButton">+</button>
@@ -18,12 +21,16 @@
         <ul id="nameList"></ul>
       </div>
       <div id="wheelContainer">
+        <div id="wheelTextOverlay">
+          <div id="wheelText">^_^</div>
+        </div>
         <canvas id="wheelCanvas" width="500" height="500"></canvas>
-        <button class="button-79" role="button" id="spinButton">Girar</button>
+        <button class="button-spin" role="button" id="spinButton">Girar</button>
       </div>
     </div>
     <div id="modal" class="modal">
       <div class="modal-content">
+        <span class="close-modal">&times;</span>
         <h2 id="winnerName"></h2>
       </div>
     </div>
