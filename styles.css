@@ -512,6 +512,7 @@ body {
 
   #controls #inputContainer #addNameButton {
     position: static;
+    transform: none;
     margin: 0;
     font-size: 22px;
     padding: 8px 16px;
