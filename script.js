@@ -80,6 +80,7 @@
   let currentAngle = 0;
   let spinVelocity = 0;
   let spinning = false;
+  let transitioning = false; // Track if we're in transition animation
 
   const predefinedColors = [
     '#FFBC70',
@@ -106,6 +107,9 @@
 
   let assignedColors = [];
 
+  // Store the empty wheel color to assign to the first option
+  let emptyWheelColor = predefinedColors[Math.floor(Math.random() * predefinedColors.length)];
+
   function hideSpinButton() {
     spinButton.style.opacity = 0;
     spinButton.style.pointerEvents = 'none';
@@ -121,6 +125,11 @@
   }
 
   function getColor() {
+    // If this is the first option, use the empty wheel color
+    if (assignedColors.length === 0) {
+      return emptyWheelColor;
+    }
+    
     if (assignedColors.length < predefinedColors.length) {
       let randomColor;
       do {
@@ -135,6 +144,36 @@
       const lightness = Math.floor(Math.random() * 20) + 40;
       return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
+  }
+
+  // Helper function to convert color to rgba with transparency
+  function colorToRgba(color, alpha = 0.8) {
+    // Create a temporary element to get computed color
+    const tempElement = document.createElement('div');
+    tempElement.style.color = color;
+    document.body.appendChild(tempElement);
+    
+    const computedColor = window.getComputedStyle(tempElement).color;
+    document.body.removeChild(tempElement);
+    
+    // Extract RGB values from computed color
+    const rgbMatch = computedColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    if (rgbMatch) {
+      const [, r, g, b] = rgbMatch;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    
+    // Fallback for hex colors
+    if (color.startsWith('#')) {
+      const hex = color.substring(1);
+      const r = parseInt(hex.substr(0, 2), 16);
+      const g = parseInt(hex.substr(2, 2), 16);
+      const b = parseInt(hex.substr(4, 2), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    
+    // Return original color if conversion fails
+    return color;
   }
 
   // Add event listener for closing modal
@@ -186,6 +225,8 @@
   function addNameToWheel() {
     const name = nameInput.value.trim();
     if (name && !names.includes(name)) {
+      const wasEmpty = names.length === 0;
+      
       names.push(name);
 
       // Assign a color from the predefined array or generate a random one
@@ -194,7 +235,13 @@
 
       nameInput.value = ''; // Clear the input field
       updateNameList();
-      drawWheel();
+      
+      // If this is the first option, animate the transition
+      if (wasEmpty) {
+        animateEmptyToWheel();
+      } else {
+        drawWheel();
+      }
     }
   }
 
@@ -204,7 +251,7 @@
     names.forEach((name, index) => {
       const li = document.createElement('li');
       li.textContent = name;
-      li.style.backgroundColor = assignedColors[index];
+      li.style.backgroundColor = colorToRgba(assignedColors[index], 0.8);
 
       const removeButton = document.createElement('span');
       removeButton.textContent = 'X';
@@ -219,10 +266,21 @@
   }
 
   function removeName(index) {
+    // If we're removing the last remaining option, store its color for the empty wheel
+    if (names.length === 1) {
+      emptyWheelColor = assignedColors[0];
+    }
+    
     names.splice(index, 1);
     assignedColors.splice(index, 1);
     updateNameList();
-    drawWheel();
+    
+    // If we're going back to empty, animate the reverse transition
+    if (names.length === 0) {
+      animateWheelToEmpty();
+    } else {
+      drawWheel();
+    }
   }
 
   // Draw the wheel
@@ -238,7 +296,7 @@
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
       ctx.setLineDash([15, 15]); // Dotted line style
-      ctx.fillStyle = 'rgb(222, 174, 18)';
+      ctx.fillStyle = colorToRgba(emptyWheelColor, 0.8);
       ctx.fill();
       return;
     }
@@ -270,6 +328,168 @@
     });
 
     // Draw the arrow
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY - radius + 15);
+    ctx.lineTo(centerX - 10, centerY - radius - 10);
+    ctx.lineTo(centerX + 10, centerY - radius - 10);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Animate transition from empty wheel to wheel with first option
+  function animateEmptyToWheel() {
+    transitioning = true;
+    let progress = 0;
+    const duration = 800; // 800ms transition
+    const startTime = Date.now();
+    
+    function animate() {
+      const elapsed = Date.now() - startTime;
+      progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function for smooth transition
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      
+      drawTransition(easeProgress);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        transitioning = false;
+        drawWheel();
+      }
+    }
+    
+    requestAnimationFrame(animate);
+  }
+  
+  // Draw the transition between empty wheel and first option
+  function drawTransition(progress) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const wheelTextOverlay = document.getElementById('wheelTextOverlay');
+    
+    // Fade out the overlay text
+    wheelTextOverlay.style.opacity = 1 - progress;
+    if (progress >= 1) {
+      wheelTextOverlay.style.display = 'none';
+    }
+    
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    
+    if (progress < 0.5) {
+      // First half: transition from dotted to solid circle
+      const dashProgress = 1 - (progress * 2);
+      ctx.setLineDash([15 * dashProgress, 15 * dashProgress]);
+      ctx.fillStyle = colorToRgba(emptyWheelColor, 0.8);
+      ctx.fill();
+    } else {
+      // Second half: transition to full wheel segment
+      ctx.setLineDash([]);
+      const segmentProgress = (progress - 0.5) * 2;
+      
+      // Draw the growing segment
+      const endAngle = segmentProgress * 2 * Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, 0, endAngle);
+      ctx.closePath();
+      ctx.fillStyle = assignedColors[0];
+      ctx.fill();
+      
+      // Draw the remaining empty area
+      if (segmentProgress < 1) {
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, endAngle, 2 * Math.PI);
+        ctx.closePath();
+        ctx.fillStyle = colorToRgba(emptyWheelColor, 0.8);
+        ctx.fill();
+      }
+    }
+    
+    // Always draw the arrow
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY - radius + 15);
+    ctx.lineTo(centerX - 10, centerY - radius - 10);
+    ctx.lineTo(centerX + 10, centerY - radius - 10);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Animate transition from wheel with one option back to empty wheel
+  function animateWheelToEmpty() {
+    transitioning = true;
+    let progress = 0;
+    const duration = 600; // 600ms transition (slightly faster)
+    const startTime = Date.now();
+    
+    function animate() {
+      const elapsed = Date.now() - startTime;
+      progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function for smooth transition
+      const easeProgress = 1 - Math.pow(1 - progress, 2);
+      
+      drawReverseTransition(easeProgress);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        transitioning = false;
+        drawWheel(); // This will draw the empty wheel
+      }
+    }
+    
+    requestAnimationFrame(animate);
+  }
+  
+  // Draw the reverse transition from wheel back to empty
+  function drawReverseTransition(progress) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const wheelTextOverlay = document.getElementById('wheelTextOverlay');
+    
+    if (progress < 0.5) {
+      // First half: shrink the segment
+      const segmentProgress = 1 - (progress * 2);
+      const endAngle = segmentProgress * 2 * Math.PI;
+      
+      if (segmentProgress > 0) {
+        // Draw the shrinking segment
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, 0, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = emptyWheelColor;
+        ctx.fill();
+      }
+      
+      // Draw the growing empty area
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, endAngle, 2 * Math.PI);
+      ctx.closePath();
+      ctx.fillStyle = colorToRgba(emptyWheelColor, 0.8);
+      ctx.fill();
+    } else {
+      // Second half: transition from solid to dotted circle
+      const dashProgress = (progress - 0.5) * 2;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.setLineDash([15 * dashProgress, 15 * dashProgress]);
+      ctx.fillStyle = colorToRgba(emptyWheelColor, 0.8);
+      ctx.fill();
+      
+      // Fade in the overlay text
+      wheelTextOverlay.style.display = 'flex';
+      wheelTextOverlay.style.opacity = dashProgress;
+    }
+    
+    // Always draw the arrow
     ctx.fillStyle = '#000';
     ctx.beginPath();
     ctx.moveTo(centerX, centerY - radius + 15);
@@ -352,7 +572,7 @@
     setTimeout(() => {
       modal.classList.add('animated');
       modal.style.display = 'block'; // Show the modal
-      modal.style.backgroundColor = winnerLi.style.backgroundColor;
+      modal.style.backgroundColor = assignedColors[segmentIndex]; // Use original color for modal
       
       // Create the content for the modal
       let modalContent = '';
