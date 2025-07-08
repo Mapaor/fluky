@@ -14,6 +14,11 @@
   // Make these let so they can be updated dynamically
   let centerX, centerY, radius;
 
+  // Helper function to detect mobile
+  function isMobile() {
+    return window.innerWidth <= 600;
+  }
+
   // Responsive canvas sizing
   function resizeCanvas() {
     let size;
@@ -36,11 +41,25 @@
   window.addEventListener('resize', () => {
     resizeCanvas();
     drawWheel();
+    
+    // Handle button visibility on resize (mobile/desktop switch)
+    if (isMobile() && names.length >= 2 && !spinning) {
+      showSpinButton();
+    } else if (!isMobile() && names.length >= 2 && !spinning) {
+      // On desktop, hide button initially (will show on hover)
+      hideSpinButton();
+    }
   });
 
   // Add precise mouse move detection for wheel hover effect
   canvas.addEventListener('mousemove', (event) => {
     if (names.length >= 2 && !spinning) {
+      // On mobile, don't require hover - button is always visible when there are 2+ options
+      if (isMobile()) {
+        showSpinButton();
+        return;
+      }
+      
       const rect = canvas.getBoundingClientRect();
       const mouseX = event.clientX - rect.left;
       const mouseY = event.clientY - rect.top;
@@ -63,6 +82,10 @@
   });
 
   canvas.addEventListener('mouseleave', () => {
+    // On mobile, don't hide the button on mouse leave if there are 2+ options
+    if (isMobile() && names.length >= 2 && !spinning) {
+      return;
+    }
     hideSpinButton();
   });
 
@@ -74,6 +97,10 @@
   });
 
   spinButton.addEventListener('mouseleave', () => {
+    // On mobile, don't hide the button on mouse leave if there are 2+ options
+    if (isMobile() && names.length >= 2 && !spinning) {
+      return;
+    }
     hideSpinButton();
   });
 
@@ -247,6 +274,11 @@
       } else {
         drawWheel();
       }
+      
+      // On mobile, show the spin button if we now have 2+ options
+      if (isMobile() && names.length >= 2 && !spinning) {
+        showSpinButton();
+      }
     }
   }
 
@@ -286,6 +318,11 @@
     } else {
       drawWheel();
     }
+    
+    // On mobile, hide the spin button if we now have less than 2 options
+    if (isMobile() && names.length < 2) {
+      hideSpinButton();
+    }
   }
 
   // Draw the wheel
@@ -313,6 +350,11 @@
     // If there's only one name, hide the spin button
     if (names.length === 1) {
       hideSpinButton();
+    }
+
+    // On mobile, show button immediately if there are 2+ options
+    if (isMobile() && names.length >= 2 && !spinning) {
+      showSpinButton();
     }
 
     // Button visibility is now controlled by mouse hover events

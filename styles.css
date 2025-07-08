@@ -502,27 +502,29 @@ body {
   #controls #inputContainer input {
     font-size: 18px;
     padding: 12px;
-    flex: 1 1 0%;
+    flex: 1;
     min-width: 0;
     border-radius: 6px;
     border: 2px solid #ddd;
     background-color: rgba(255, 255, 255, 0.7);
+    height: 50px;
   }
 
   #controls #inputContainer #addNameButton {
     position: static;
     margin: 0;
     font-size: 22px;
-    padding: 8px 20px;
+    padding: 8px 16px;
     border-radius: 6px;
-    min-width: 42px;         /* Makes button a circle when just '+' */
-    height: 42px;
+    min-width: 50px;
+    height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 2px solid #ddd;
     background-color: rgba(255, 255, 255, 0.7);
     color: #333;
+    flex-shrink: 0;
   }
 
   #nameList {
