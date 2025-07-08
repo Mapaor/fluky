@@ -155,6 +155,16 @@ body {
   margin: 20px;
 }
 
+#wheelContainer.winner-mode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  z-index: 1;
+}
+
 .slide {
   transition: padding 500ms;
 }
@@ -202,6 +212,8 @@ body {
   color: rgb(237, 236, 236);
   z-index: 10;
   transition: all 0.3s ease;
+  cursor: default;
+  pointer-events: none;
 }
 
 #spinButton:hover {
@@ -378,7 +390,7 @@ body {
     transform: translateY(-100px) rotate(var(--rotation-start));
   }
   100% {
-    transform: translateY(100vh) rotate(var(--rotation-end));
+    transform: translateY(calc(100vh + 30px)) rotate(var(--rotation-end));
   }
 }
 
@@ -535,6 +547,17 @@ body {
     margin: 0;
   }
 
+  #wheelContainer.winner-mode {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+  }
+
   /* Canvas responsive sizing */
   #wheelCanvas {
     width: 90vw !important;
@@ -567,6 +590,8 @@ body {
     justify-content: center;
     z-index: 10;
     transition: all 0.3s ease;
+    cursor: default;
+    pointer-events: none;
   }
 
   /* Modal adjustments */
@@ -655,5 +680,7 @@ body {
     justify-content: center;
     z-index: 10;
     transition: all 0.3s ease;
+    cursor: default;
+    pointer-events: none;
   }
 }

@@ -8,6 +8,7 @@
   const nameList = document.getElementById('nameList');
   const controls = document.getElementById('controls');
   const modal = document.getElementById('modal');
+  const wheelContainer = document.getElementById('wheelContainer');
   const closeModalButton = document.querySelector('.close-modal');
 
   // Make these let so they can be updated dynamically
@@ -55,24 +56,25 @@
       } else {
         hideSpinButton();
       }
+    } else {
+      // Always hide button if there are less than 2 names
+      hideSpinButton();
     }
   });
 
   canvas.addEventListener('mouseleave', () => {
-    if (names.length >= 2 && !spinning) {
-      hideSpinButton();
-    }
+    hideSpinButton();
   });
 
   // Add mouse enter/leave event listeners for the spin button to prevent it from disappearing
   spinButton.addEventListener('mouseenter', () => {
-    showSpinButton();
+    if (names.length >= 2 && !spinning) {
+      showSpinButton();
+    }
   });
 
   spinButton.addEventListener('mouseleave', () => {
-    if (names.length >= 2 && !spinning) {
-      hideSpinButton();
-    }
+    hideSpinButton();
   });
 
   let names = [];
@@ -182,6 +184,9 @@
   });
 
   function closeModal() {
+    // Remove winner mode class from wheel container
+    wheelContainer.classList.remove('winner-mode');
+    
     // Hide modal
     modal.style.display = 'none';
     modal.classList.remove('animated');
@@ -292,6 +297,7 @@
     // If there are no names, show the overlay text and draw the dotted circle
     if (names.length === 0) {
       wheelTextOverlay.style.display = 'flex';
+      hideSpinButton(); // Ensure button is hidden
       
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
@@ -303,6 +309,11 @@
 
     // Hide the overlay text when there are names
     wheelTextOverlay.style.display = 'none';
+
+    // If there's only one name, hide the spin button
+    if (names.length === 1) {
+      hideSpinButton();
+    }
 
     // Button visibility is now controlled by mouse hover events
 
@@ -424,7 +435,7 @@
   function animateWheelToEmpty() {
     transitioning = true;
     let progress = 0;
-    const duration = 600; // 600ms transition (slightly faster)
+    const duration = 1200; // 1200ms transition (same as forward)
     const startTime = Date.now();
     
     function animate() {
@@ -432,7 +443,7 @@
       progress = Math.min(elapsed / duration, 1);
       
       // Easing function for smooth transition
-      const easeProgress = 1 - Math.pow(1 - progress, 2);
+      const easeProgress = 1 - Math.pow(1 - progress, 1.5);
       
       drawReverseTransition(easeProgress);
       
@@ -489,8 +500,9 @@
       wheelTextOverlay.style.opacity = dashProgress;
     }
     
-    // Always draw the arrow
-    ctx.fillStyle = '#000';
+    // Draw the arrow with fade out effect
+    const arrowOpacity = Math.max(0, 1 - (progress * 2)); // Fade out in half the time
+    ctx.fillStyle = `rgba(0, 0, 0, ${arrowOpacity})`;
     ctx.beginPath();
     ctx.moveTo(centerX, centerY - radius + 15);
     ctx.lineTo(centerX - 10, centerY - radius - 10);
@@ -570,6 +582,9 @@
 
     // Show the modal after the animation
     setTimeout(() => {
+      // Add winner mode class to wheel container for full viewport positioning
+      wheelContainer.classList.add('winner-mode');
+      
       modal.classList.add('animated');
       modal.style.display = 'block'; // Show the modal
       modal.style.backgroundColor = assignedColors[segmentIndex]; // Use original color for modal
