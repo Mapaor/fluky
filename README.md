@@ -3,4 +3,3 @@ Fa un temps existia fluky.io que era molt xula per prendre decisions. Aquesta we
 ### Links
 - [https://mapaor.github.io/fluky](https://mapaor.github.io/fluky)
 - [https://fluky.vercel.app](https://fluky.vercel.app)
-- [https://fluky.marti.wtf](https://fluky.marti.wtf)
